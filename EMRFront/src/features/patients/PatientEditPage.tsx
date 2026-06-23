@@ -70,7 +70,7 @@ export function PatientEditPage() {
 
   return (
     <RoleGuard
-      allowedRoles={['ADMIN_STAFF']}
+      allowedRoles={['ADMIN_STAFF', 'NURSE']}
       fallback={
         <ErrorMessage message="현재 계정 권한으로는 환자 정보를 수정할 수 없습니다." />
       }

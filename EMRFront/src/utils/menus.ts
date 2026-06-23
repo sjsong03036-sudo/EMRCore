@@ -31,7 +31,7 @@ export const appMenus: AppMenu[] = [
     to: ROUTE_PATHS.nursingRecordNew,
   },
   {
-    allowedRoles: ['NURSE'],
+    allowedRoles: ['DOCTOR', 'NURSE'],
     label: '입퇴원기록 작성',
     to: ROUTE_PATHS.admissionDischargeRecordNew,
   },

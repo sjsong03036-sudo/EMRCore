@@ -20,6 +20,11 @@ export interface LoginResponse {
   user: AuthUser
 }
 
+export interface TokenResponse {
+  accessToken: string
+  refreshToken?: string
+}
+
 export interface SignupRequest {
   loginId: string
   password: string

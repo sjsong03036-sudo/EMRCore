@@ -9,13 +9,13 @@ export interface Patient {
   gender: PatientGender
   phone: string
   insuranceNo?: string
+  createdAt?: string
   deletedAt?: string | null
 }
 
 export interface PatientSearchParams {
   name?: string
   page?: number
-  phone?: string
   size?: number
 }
 
@@ -31,7 +31,8 @@ export type UpdatePatientRequest = Partial<CreatePatientRequest>
 
 export interface PatientListResponse {
   content: Patient[]
-  page: number
+  number?: number
+  page?: number
   size: number
   totalElements: number
   totalPages: number

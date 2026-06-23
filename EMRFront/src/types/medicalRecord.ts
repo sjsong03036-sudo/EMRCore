@@ -65,6 +65,7 @@ export interface MedicalRecordSearchParams {
   authorKeyword?: string
   endDate?: string
   page?: number
+  patientId?: number
   patientKeyword?: string
   size?: number
   startDate?: string

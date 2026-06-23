@@ -9,7 +9,7 @@ interface AuthState {
   isAuthenticated: boolean
   setAuth: (auth: LoginResponse) => void
   clearAuth: () => void
-  updateAccessToken: (accessToken: string) => void
+  updateTokens: (accessToken: string, refreshToken?: string) => void
 }
 
 const initialAuthState = {
@@ -31,9 +31,10 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
         }),
       clearAuth: () => set(initialAuthState),
-      updateAccessToken: (accessToken) =>
+      updateTokens: (accessToken, refreshToken) =>
         set({
           accessToken,
+          refreshToken: refreshToken ?? null,
           isAuthenticated: true,
         }),
     }),

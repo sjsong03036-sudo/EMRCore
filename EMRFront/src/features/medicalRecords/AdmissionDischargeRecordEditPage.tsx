@@ -11,7 +11,6 @@ import type {
   CreateAdmissionDischargeRecordRequest,
   UpdateAdmissionDischargeRecordRequest,
 } from '../../types/medicalRecord'
-import { useAuthStore } from '../auth/authStore'
 import { AdmissionDischargeRecordForm } from './components/AdmissionDischargeRecordForm'
 
 function getMedicalRecordDetailPath(recordId: number) {
@@ -45,7 +44,6 @@ function getUpdateAdmissionDischargeRecordErrorMessage(error: unknown) {
 export function AdmissionDischargeRecordEditPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const user = useAuthStore((state) => state.user)
   const { recordId } = useParams()
   const parsedRecordId = parseRecordId(recordId)
   const isValidRecordId = parsedRecordId !== null
@@ -77,12 +75,6 @@ export function AdmissionDischargeRecordEditPage() {
 
   const record = recordQuery.data
   const isAdmissionDischargeRecord = record?.type === 'ADMISSION_DISCHARGE'
-  const canEditRecord =
-    !!record &&
-    isAdmissionDischargeRecord &&
-    !!user &&
-    user.role === 'NURSE' &&
-    user.id === record.authorId
 
   const handleSubmit = (
     values:
@@ -94,7 +86,7 @@ export function AdmissionDischargeRecordEditPage() {
 
   return (
     <RoleGuard
-      allowedRoles={['NURSE']}
+      allowedRoles={['DOCTOR', 'NURSE']}
       fallback={
         <ErrorMessage message="현재 계정 권한으로는 입퇴원기록을 수정할 수 없습니다." />
       }
@@ -133,11 +125,7 @@ export function AdmissionDischargeRecordEditPage() {
           <ErrorMessage message="입퇴원기록만 이 화면에서 수정할 수 있습니다." />
         )}
 
-        {record && isAdmissionDischargeRecord && !canEditRecord && (
-          <ErrorMessage message="본인이 작성한 입퇴원기록만 수정할 수 있습니다." />
-        )}
-
-        {canEditRecord && (
+        {record && isAdmissionDischargeRecord && (
           <AdmissionDischargeRecordForm
             defaultValues={record}
             isSubmitting={mutation.isPending}

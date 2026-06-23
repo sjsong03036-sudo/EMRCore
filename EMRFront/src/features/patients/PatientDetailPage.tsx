@@ -102,7 +102,7 @@ export function PatientDetailPage() {
           >
             기록 이력
           </Link>
-          <RoleGuard allowedRoles={['ADMIN_STAFF']}>
+          <RoleGuard allowedRoles={['ADMIN_STAFF', 'NURSE']}>
             <Link
               className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
               to={getPatientEditPath(parsedPatientId)}

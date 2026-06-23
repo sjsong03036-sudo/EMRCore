@@ -20,22 +20,18 @@ export function PatientSelectSearch({
   selectedPatientId,
 }: PatientSelectSearchProps) {
   const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
   const [submittedSearch, setSubmittedSearch] = useState({
     name: '',
-    phone: '',
   })
 
   const trimmedName = submittedSearch.name.trim()
-  const trimmedPhone = submittedSearch.phone.trim()
-  const hasSearchParams = trimmedName.length > 0 || trimmedPhone.length > 0
+  const hasSearchParams = trimmedName.length > 0
   const patientQuery = useQuery({
     enabled: hasSearchParams,
-    queryKey: ['patientSelectSearch', trimmedName, trimmedPhone],
+    queryKey: ['patientSelectSearch', trimmedName],
     queryFn: () =>
       getPatients({
         ...(trimmedName ? { name: trimmedName } : {}),
-        ...(trimmedPhone ? { phone: trimmedPhone } : {}),
         page: 1,
         size: DEFAULT_SEARCH_SIZE,
       }),
@@ -46,13 +42,12 @@ export function PatientSelectSearch({
   const handleSearch = () => {
     setSubmittedSearch({
       name,
-      phone,
     })
   }
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <Input
           id="patientSelectSearchName"
           label="환자 이름"
@@ -66,20 +61,6 @@ export function PatientSelectSearch({
           placeholder="환자 이름"
           type="search"
           value={name}
-        />
-        <Input
-          id="patientSelectSearchPhone"
-          label="연락처"
-          onChange={(event) => setPhone(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              handleSearch()
-            }
-          }}
-          placeholder="010-0000-0000"
-          type="search"
-          value={phone}
         />
         <Button onClick={handleSearch}>검색</Button>
       </div>
@@ -99,7 +80,7 @@ export function PatientSelectSearch({
         {!patientQuery.isFetching && !hasSearchParams && (
           <EmptyState
             className="py-6"
-            description="이름 또는 연락처로 환자를 검색하세요."
+            description="이름으로 환자를 검색하세요."
             title="검색어를 입력해주세요."
           />
         )}
@@ -109,7 +90,7 @@ export function PatientSelectSearch({
           patients.length === 0 && (
             <EmptyState
               className="py-6"
-              description="다른 이름 또는 연락처로 다시 검색해보세요."
+              description="다른 이름으로 다시 검색해보세요."
               title="검색된 환자가 없습니다."
             />
           )}

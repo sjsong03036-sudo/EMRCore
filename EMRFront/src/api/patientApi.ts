@@ -1,6 +1,6 @@
 import { axiosInstance } from './axiosInstance'
-import { unwrapApiResponse } from './apiResponse'
-import type { MedicalRecordSummary } from '../types/medicalRecord'
+import { normalizePageResponse, unwrapApiResponse } from './apiResponse'
+import { getPatientMedicalRecords as getMedicalRecordsByPatient } from './medicalRecordApi'
 import type {
   CreatePatientRequest,
   Patient,
@@ -9,12 +9,21 @@ import type {
   UpdatePatientRequest,
 } from '../types/patient'
 
+function toPageParams(params: PatientSearchParams) {
+  return {
+    ...params,
+    page: params.page ? params.page - 1 : undefined,
+  }
+}
+
 export async function getPatients(params: PatientSearchParams = {}) {
   const response = await axiosInstance.get<PatientListResponse>('/patients', {
-    params,
+    params: toPageParams(params),
   })
 
-  return unwrapApiResponse<PatientListResponse>(response.data)
+  return normalizePageResponse<Patient>(
+    unwrapApiResponse<PatientListResponse>(response.data),
+  )
 }
 
 export async function getPatient(patientId: number) {
@@ -24,21 +33,19 @@ export async function getPatient(patientId: number) {
 }
 
 export async function createPatient(request: CreatePatientRequest) {
-  const response = await axiosInstance.post<Patient>('/patients', request)
+  const response = await axiosInstance.post<number>('/patients', request)
+  const patientId = unwrapApiResponse<number>(response.data)
 
-  return unwrapApiResponse<Patient>(response.data)
+  return getPatient(patientId)
 }
 
 export async function updatePatient(
   patientId: number,
   request: UpdatePatientRequest,
 ) {
-  const response = await axiosInstance.patch<Patient>(
-    `/patients/${patientId}`,
-    request,
-  )
+  await axiosInstance.patch(`/patients/${patientId}`, request)
 
-  return unwrapApiResponse<Patient>(response.data)
+  return getPatient(patientId)
 }
 
 export async function deletePatient(patientId: number) {
@@ -46,9 +53,5 @@ export async function deletePatient(patientId: number) {
 }
 
 export async function getPatientMedicalRecords(patientId: number) {
-  const response = await axiosInstance.get<MedicalRecordSummary[]>(
-    `/patients/${patientId}/medical-records`,
-  )
-
-  return unwrapApiResponse<MedicalRecordSummary[]>(response.data)
+  return getMedicalRecordsByPatient(patientId)
 }

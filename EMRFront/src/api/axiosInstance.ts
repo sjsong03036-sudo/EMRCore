@@ -7,7 +7,7 @@ import { getApiErrorMessage } from './apiError'
 import { unwrapApiResponse } from './apiResponse'
 import { ROUTE_PATHS } from '../app/routePaths'
 import { useAuthStore } from '../features/auth/authStore'
-import type { LoginResponse } from '../types/auth'
+import type { TokenResponse } from '../types/auth'
 
 interface RetryableAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
@@ -54,22 +54,22 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true
 
       try {
-        const { refreshToken, updateAccessToken } = useAuthStore.getState()
+        const { refreshToken, updateTokens } = useAuthStore.getState()
 
         if (!refreshToken) {
           throw new Error('Refresh token is missing.')
         }
 
-        const response = await axios.post<LoginResponse>(
+        const response = await axios.post<TokenResponse>(
           '/auth/reissue',
           { refreshToken },
           { baseURL: API_BASE_URL },
         )
 
-        const loginResponse = unwrapApiResponse<LoginResponse>(response.data)
+        const tokenResponse = unwrapApiResponse<TokenResponse>(response.data)
 
-        updateAccessToken(loginResponse.accessToken)
-        originalRequest.headers.Authorization = `Bearer ${loginResponse.accessToken}`
+        updateTokens(tokenResponse.accessToken, tokenResponse.refreshToken)
+        originalRequest.headers.Authorization = `Bearer ${tokenResponse.accessToken}`
 
         return axiosInstance(originalRequest)
       } catch (reissueError) {

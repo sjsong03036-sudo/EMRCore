@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { getPatients } from '../../api/patientApi'
 import { ROUTE_PATHS } from '../../app/routePaths'
+import { RoleGuard } from '../../components/RoleGuard'
 import { ErrorMessage } from '../../components/ui/ErrorMessage'
 import { Pagination } from '../../components/ui/Pagination'
 import type { PatientSearchParams } from '../../types/patient'
@@ -53,12 +54,14 @@ export function PatientListPage() {
             환자 목록
           </h1>
         </div>
-        <Link
-          className="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800"
-          to={ROUTE_PATHS.patientNew}
-        >
-          환자 등록
-        </Link>
+        <RoleGuard allowedRoles={['ADMIN_STAFF']}>
+          <Link
+            className="inline-flex items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800"
+            to={ROUTE_PATHS.patientNew}
+          >
+            환자 등록
+          </Link>
+        </RoleGuard>
       </div>
 
       <PatientSearchForm

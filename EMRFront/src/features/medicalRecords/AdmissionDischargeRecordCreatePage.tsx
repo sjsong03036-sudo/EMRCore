@@ -65,7 +65,7 @@ export function AdmissionDischargeRecordCreatePage() {
 
   return (
     <RoleGuard
-      allowedRoles={['NURSE']}
+      allowedRoles={['DOCTOR', 'NURSE']}
       fallback={
         <ErrorMessage message="현재 계정 권한으로는 입퇴원기록을 작성할 수 없습니다." />
       }

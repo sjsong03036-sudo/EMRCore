@@ -28,6 +28,25 @@ const editableRecordTypes: MedicalRecordType[] = [
   'ADMISSION_DISCHARGE',
 ]
 
+function canManageMedicalRecord(
+  record: MedicalRecordDetail | undefined,
+  user: { id: number; role: string } | null,
+) {
+  if (!record || !user || !editableRecordTypes.includes(record.type)) {
+    return false
+  }
+
+  if (record.type === 'NURSING') {
+    return user.role === 'NURSE' && user.id === record.authorId
+  }
+
+  if (record.type === 'ADMISSION_DISCHARGE') {
+    return user.role === 'DOCTOR' || user.role === 'NURSE'
+  }
+
+  return false
+}
+
 function parseRecordId(recordId?: string) {
   const parsedRecordId = Number(recordId)
 
@@ -158,12 +177,7 @@ export function MedicalRecordDetailPage() {
 
   const record = recordQuery.data
   const editPath = record ? getEditPath(record) : null
-  const canManageRecord =
-    !!record &&
-    !!user &&
-    user.role === 'NURSE' &&
-    user.id === record.authorId &&
-    editableRecordTypes.includes(record.type)
+  const canManageRecord = canManageMedicalRecord(record, user)
 
   return (
     <div className="space-y-5">
