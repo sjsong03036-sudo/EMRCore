@@ -5,5 +5,6 @@ export const medicalRecordTypeLabels: Record<MedicalRecordType, string> = {
   FOLLOW_UP: '재진기록',
   INITIAL: '초진기록',
   NURSING: '간호기록',
+  OBSERVATION: '임상관찰',
   OPERATION: '수술기록',
 }

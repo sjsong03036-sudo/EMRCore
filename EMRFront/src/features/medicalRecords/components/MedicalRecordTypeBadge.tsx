@@ -14,6 +14,7 @@ const medicalRecordTypeTones: Record<
   FOLLOW_UP: 'gray',
   INITIAL: 'teal',
   NURSING: 'teal',
+  OBSERVATION: 'gray',
   OPERATION: 'red',
 }
 

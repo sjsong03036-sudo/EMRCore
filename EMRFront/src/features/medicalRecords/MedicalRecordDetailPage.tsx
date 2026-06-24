@@ -5,6 +5,7 @@ import { getApiErrorStatus } from '../../api/apiError'
 import {
   deleteAdmissionDischargeRecord,
   deleteNursingRecord,
+  getMedicalRecordHistories,
   getMedicalRecord,
 } from '../../api/medicalRecordApi'
 import { ROUTE_PATHS } from '../../app/routePaths'
@@ -14,6 +15,7 @@ import { ErrorMessage } from '../../components/ui/ErrorMessage'
 import { useAuthStore } from '../auth/authStore'
 import type {
   MedicalRecordDetail,
+  MedicalRecordHistory,
   MedicalRecordType,
 } from '../../types/medicalRecord'
 import { MedicalRecordTypeBadge } from './components/MedicalRecordTypeBadge'
@@ -21,6 +23,11 @@ import { MedicalRecordTypeBadge } from './components/MedicalRecordTypeBadge'
 interface DetailFieldProps {
   label: string
   value?: number | string
+}
+
+const historyActionLabels: Record<MedicalRecordHistory['action'], string> = {
+  DELETE: '삭제',
+  UPDATE: '수정',
 }
 
 const editableRecordTypes: MedicalRecordType[] = [
@@ -66,6 +73,29 @@ function DetailField({ label, value }: DetailFieldProps) {
       </dd>
     </div>
   )
+}
+
+function summarizeSnapshot(snapshot: string) {
+  if (!snapshot.trim()) {
+    return '-'
+  }
+
+  try {
+    const parsedSnapshot = JSON.parse(snapshot) as Record<string, unknown>
+    const summaryParts = [
+      parsedSnapshot.patientName ? `환자: ${parsedSnapshot.patientName}` : null,
+      parsedSnapshot.recordedAt ? `기록일시: ${parsedSnapshot.recordedAt}` : null,
+      parsedSnapshot.authorName ? `작성자: ${parsedSnapshot.authorName}` : null,
+    ].filter(Boolean)
+
+    if (summaryParts.length > 0) {
+      return summaryParts.join(' · ')
+    }
+  } catch {
+    return snapshot
+  }
+
+  return snapshot
 }
 
 function getEditPath(record: MedicalRecordDetail) {
@@ -153,6 +183,12 @@ export function MedicalRecordDetailPage() {
     queryFn: () => getMedicalRecord(parsedRecordId as number),
   })
 
+  const historyQuery = useQuery({
+    enabled: isValidRecordId,
+    queryKey: ['medicalRecordHistories', parsedRecordId],
+    queryFn: () => getMedicalRecordHistories(parsedRecordId as number),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (recordQuery.data?.type === 'NURSING') {
@@ -167,6 +203,9 @@ export function MedicalRecordDetailPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['medicalRecords'] })
       await queryClient.invalidateQueries({ queryKey: ['patientMedicalRecords'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['medicalRecordHistories', parsedRecordId],
+      })
       navigate(ROUTE_PATHS.medicalRecords, { replace: true })
     },
   })
@@ -260,6 +299,63 @@ export function MedicalRecordDetailPage() {
           <dl className="mt-5 grid gap-4 md:grid-cols-2">
             {renderTypeSpecificFields(record)}
           </dl>
+        </section>
+      )}
+
+      {record && (
+        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              수정/삭제 이력
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              이 기록에 대해 저장된 변경 전 스냅샷을 표시합니다.
+            </p>
+          </div>
+
+          {historyQuery.isLoading && (
+            <p className="mt-5 text-sm text-slate-600">
+              이력을 불러오는 중입니다.
+            </p>
+          )}
+
+          {historyQuery.error && (
+            <div className="mt-5">
+              <ErrorMessage message="수정/삭제 이력을 불러오지 못했습니다." />
+            </div>
+          )}
+
+          {!historyQuery.isLoading &&
+            !historyQuery.error &&
+            (historyQuery.data?.content.length ?? 0) === 0 && (
+              <p className="mt-5 rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                저장된 수정/삭제 이력이 없습니다.
+              </p>
+            )}
+
+          {(historyQuery.data?.content.length ?? 0) > 0 && (
+            <div className="mt-5 divide-y divide-slate-200 rounded-md border border-slate-200">
+              {historyQuery.data?.content.map((history) => (
+                <div className="space-y-2 px-4 py-3" key={history.id}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {historyActionLabels[history.action]} 이력
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {history.createdAt}
+                    </p>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    수행자 ID: {history.modifierId} · 기록 타입:{' '}
+                    {history.recordType}
+                  </p>
+                  <p className="whitespace-pre-wrap break-words text-sm text-slate-700">
+                    {summarizeSnapshot(history.snapshot)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

@@ -4,6 +4,8 @@ import type {
   CreateAdmissionDischargeRecordRequest,
   CreateNursingRecordRequest,
   MedicalRecordDetail,
+  MedicalRecordHistory,
+  MedicalRecordHistoryListResponse,
   MedicalRecordSearchParams,
   UpdateAdmissionDischargeRecordRequest,
   UpdateNursingRecordRequest,
@@ -265,4 +267,22 @@ export async function getPatientMedicalRecords(patientId: number) {
     ...nursingPage.content.map(mapNursingRecord),
     ...admissionDischargePage.content.map(mapAdmissionDischargeRecord),
   ] satisfies MedicalRecordDetail[]
+}
+
+export async function getMedicalRecordHistories(recordId: number) {
+  const response =
+    await axiosInstance.get<MedicalRecordHistoryListResponse>(
+      '/medical-records/history',
+      {
+        params: {
+          page: 0,
+          recordId,
+          size: 20,
+        },
+      },
+    )
+
+  return normalizePageResponse<MedicalRecordHistory>(
+    unwrapApiResponse<MedicalRecordHistoryListResponse>(response.data),
+  )
 }

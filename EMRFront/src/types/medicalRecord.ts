@@ -4,6 +4,9 @@ export type MedicalRecordType =
   | 'INITIAL'
   | 'FOLLOW_UP'
   | 'OPERATION'
+  | 'OBSERVATION'
+
+export type MedicalRecordHistoryAction = 'UPDATE' | 'DELETE'
 
 export interface MedicalRecordSummary {
   id: number
@@ -99,6 +102,25 @@ export type UpdateAdmissionDischargeRecordRequest = Partial<
 export interface MedicalRecordListResponse {
   content: MedicalRecordSummary[]
   page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface MedicalRecordHistory {
+  action: MedicalRecordHistoryAction
+  createdAt: string
+  id: number
+  modifierId: number
+  recordId: number
+  recordType: MedicalRecordType
+  snapshot: string
+}
+
+export interface MedicalRecordHistoryListResponse {
+  content: MedicalRecordHistory[]
+  number?: number
+  page?: number
   size: number
   totalElements: number
   totalPages: number
